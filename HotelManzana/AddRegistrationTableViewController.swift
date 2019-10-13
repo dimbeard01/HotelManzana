@@ -64,6 +64,8 @@ class AddRegistrationTableViewController: UITableViewController, SelectRoomTypeT
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        print("matrix has you")
+        
         let midnightToday = Calendar.current.startOfDay(for: Date())
         checkInDatePicker.minimumDate = midnightToday
         checkInDatePicker.date = midnightToday
