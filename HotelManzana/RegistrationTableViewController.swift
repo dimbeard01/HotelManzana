@@ -11,6 +11,7 @@ import UIKit
 class RegistrationTableViewController: UITableViewController {
     
     var registrations: [Registration] = []
+    var selectedIndexPath: IndexPath = IndexPath(row: 0, section: 0)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,8 +43,21 @@ class RegistrationTableViewController: UITableViewController {
     }
     
     @IBAction func unwindFromAddRegistration(unwindSegue: UIStoryboardSegue) {
-        guard let addRegistrationTableViewController = unwindSegue.source as? AddRegistrationTableViewController,
-              let registration = addRegistrationTableViewController.registration else { return }
+        guard let addRegistrationTableViewController = unwindSegue.source as? AddRegistrationTableViewController else {
+            fatalError("cant cast AddRegistrationTableViewController")
+        }
+              /*let registration = addRegistrationTableViewController.registration */
+        guard let registration = addRegistrationTableViewController.getRegistration() else {
+            guard let rega = addRegistrationTableViewController.registration else { return }
+            
+            guard registrations[selectedIndexPath.row] != nil else {
+                fatalError("no item found")
+            }
+            
+            registrations[selectedIndexPath.row] = rega
+            tableView.reloadData()
+            return
+        }
         
         registrations.append(registration)
         tableView.reloadData()
@@ -52,22 +66,20 @@ class RegistrationTableViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "DetailSegue" {
             let cell = tableView.indexPathForSelectedRow!
-            let detailCell = registrations[cell.row]
-            let addRegistrationTableViewController = segue.destination as? AddRegistrationTableViewController
+            let registration = registrations[cell.row]
+            guard let navigationController = segue.destination as? UINavigationController else {
+                fatalError("UINavigationController not found")
+            }
+            guard let addRegistrationTableViewController = navigationController.viewControllers.first as? AddRegistrationTableViewController else {
+                fatalError("Can't cast to AddRegistrationTableViewController")
+            }
             
-            addRegistrationTableViewController?.checkInDatePicker.date = detailCell.checkInDate
-            addRegistrationTableViewController?.checkOutDatePicker.date = detailCell.checkOutDate
-            addRegistrationTableViewController?.firstNameTextField.text = detailCell.firstName
-            addRegistrationTableViewController?.lastNameTextField.text = detailCell.lastName
-            addRegistrationTableViewController?.emailTextField.text = detailCell.emailAddress
-            addRegistrationTableViewController?.numberOfAdultsStepper.value = Double(detailCell.numbersOfAdults)
-            addRegistrationTableViewController?.numberOfChildrenStepper.value = Double(detailCell.numbersOfChildren)
-            addRegistrationTableViewController?.wifiSwitch.isEnabled = detailCell.wifi
-            addRegistrationTableViewController?.roomType = detailCell.roomType
-            addRegistrationTableViewController?.updateNumberOfGuests()
-            addRegistrationTableViewController?.updateRoomType()
-            addRegistrationTableViewController?.updateDateViews()
+            addRegistrationTableViewController.registration = registration
         }
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        selectedIndexPath = indexPath
     }
     
 }

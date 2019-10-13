@@ -44,8 +44,11 @@ class AddRegistrationTableViewController: UITableViewController, SelectRoomTypeT
     
     var roomType: RoomType?
     
-    var registration: Registration? {
-        
+//    public var selectedRegistration: Registration?
+    
+    var registration: Registration?
+    
+    public func getRegistration() -> Registration? {
         guard let roomType = roomType else { return nil }
         
         let firstName = firstNameTextField.text ?? ""
@@ -64,16 +67,18 @@ class AddRegistrationTableViewController: UITableViewController, SelectRoomTypeT
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print("matrix has you")
-        
         let midnightToday = Calendar.current.startOfDay(for: Date())
         checkInDatePicker.minimumDate = midnightToday
         checkInDatePicker.date = midnightToday
         
-    
-        updateDateViews()
-        updateNumberOfGuests()
-        updateRoomType()
+        guard let registration = registration else {
+            return
+        }
+        
+        updateUI(registration)
+//        updateDateViews()
+//        updateNumberOfGuests()
+//        updateRoomType()
     }
     
     @IBAction func datePickerValueChanged(_ sender: UIDatePicker) {
@@ -91,7 +96,7 @@ class AddRegistrationTableViewController: UITableViewController, SelectRoomTypeT
         dismiss(animated: true, completion: nil)
     }
     
-    func updateDateViews(){
+    func updateDateViews() {
         checkOutDatePicker.minimumDate = checkInDatePicker.date.addingTimeInterval(86400)
         
         let dateFormatter = DateFormatter()
@@ -99,6 +104,23 @@ class AddRegistrationTableViewController: UITableViewController, SelectRoomTypeT
         
         checkInDateLabel.text = dateFormatter.string(from: checkInDatePicker.date)
         checkOutDateLabel.text = dateFormatter.string(from: checkOutDatePicker.date)
+    }
+    
+    private func updateUI(_ registration: Registration) {
+        firstNameTextField.text = registration.firstName
+        lastNameTextField.text = registration.lastName
+        emailTextField.text = registration.emailAddress
+        checkInDatePicker.date = registration.checkInDate
+        checkOutDatePicker.date = registration.checkOutDate
+        updateDateViews()
+        
+        numberOfAdultsStepper.value = Double(registration.numbersOfAdults)
+        numberOfChildrenStepper.value = Double(registration.numbersOfChildren)
+        updateNumberOfGuests()
+        
+        wifiSwitch.isOn = registration.wifi
+        roomTypeLabel.text = registration.roomType.name
+        updateRoomType()
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
